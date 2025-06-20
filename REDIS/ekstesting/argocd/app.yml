@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redis724-ekstesting
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: ekstesting
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: ekstesting/argocd/deploy
+    repoURL: https://git-codecommit.us-east-1.amazonaws.com/v1/repos/Redis
+    targetRevision: ekstesting
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true

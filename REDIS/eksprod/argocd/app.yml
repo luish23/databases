@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redis724-eksprod
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: eksprod
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: eksprod/argocd/deploy
+    repoURL: https://git-codecommit.us-east-1.amazonaws.com/v1/repos/Redis
+    targetRevision: eksprod
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true

@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis724-svc-ekstesting
+  namespace: ekstesting
+  # annotations:
+  #   service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+  #   service.beta.kubernetes.io/aws-load-balancer-healthcheck-healthy-threshold: '2'
+  #   service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: '120'
+  #   service.beta.kubernetes.io/aws-load-balancer-healthcheck-unhealthy-threshold: '2'
+  #   service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
+  #   service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+  #   service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: preserve_client_ip.enabled=true
+  #   service.beta.kubernetes.io/aws-load-balancer-type: external
+  #   service.beta.kubernetes.io/aws-load-balancer-name: 'LoadBalancer-Databases-Interno'  # Nombre del Load Balancer
+  #   service.beta.kubernetes.io/aws-load-balancer-subnets: subnet-0b91dcf32206cc735, subnet-04e2a243f849dd9ed, subnet-00eb7ae03a28f5d9f, subnet-0a68388ef6ec4ff2f, subnet-080da62c382781951
+  labels:
+    app: redis724
+    tier: database
+    code: sql
+    country: cl
+    language: es
+    environment: ekstesting
+spec:
+  type: NodePort
+  ports:
+    - port: 6379
+      protocol: TCP
+      targetPort: 6379
+      nodePort: 30379
+  selector:
+    app: redis724
+    tier: database
+    code: sql
+    country: cl
+    language: es
+    environment: ekstesting

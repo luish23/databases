@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb10618-dp-eksdev
+  namespace: eksdev
+  labels:
+    app: mariadb10618
+    tier: database
+    code: sql
+    country: cl
+    language: es
+    environment: eksdev
+spec:
+  selector:
+    matchLabels:
+      app: mariadb10618
+      tier: database
+      code: sql
+      country: cl
+      language: es
+      environment: eksdev
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mariadb10618
+        tier: database
+        code: sql
+        country: cl
+        language: es
+        environment: eksdev
+      annotations:
+        vault.security.banzaicloud.io/vault-addr: "https://vault-devqa.portalcredex.cl"
+        vault.security.banzaicloud.io/vault-tls-secret: "vault-tls"
+        vault.security.banzaicloud.io/vault-skip-verify: "true"
+        vault.security.banzaicloud.io/vault-role: "mariadb10618-eks-role"
+        vault.security.banzaicloud.io/vault-env-from-path: "kv/data/administrator_credentials/databases/mariadb/10618_eks/dev/connection/credentials_root"
+    spec:
+      serviceAccountName: mariadb10618-eks-sa-eksdev
+      imagePullSecrets:
+        - name: harbor-registry-secret
+      restartPolicy: Always
+      containers:
+        - name: mariadb10618
+          image: harbor.portalcredex.cl/databases/mariadb10618-credex:0.0.1
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--ignore-db-dir=lost+found"
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+          - name: mariadb10618-persistent-storage-eksdev
+            mountPath: /var/lib/mysql
+          env:
+          - name: MARIADB_ROOT_PASSWORD
+            value: "vault:kv/data/administrator_credentials/databases/mariadb/10618_eks/dev/connection/credentials_root#MARIADB_ROOT_PASSWORD"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "200m"
+      volumes:
+        - name: mariadb10618-persistent-storage-eksdev
+          persistentVolumeClaim:
+            claimName: mariadb10618-pvc-eksdev
+          # startupProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 80
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 5
+          #   failureThreshold: 3
+          #   successThreshold: 1
+          # readinessProbe:
+          #   tcpSocket:
+          #     port: 80
+          #   timeoutSeconds: 5
+          #   periodSeconds: 10
+          #   successThreshold: 1

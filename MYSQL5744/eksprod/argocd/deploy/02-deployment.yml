@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql5744-dp-eksprod
+  namespace: eksprod
+  labels:
+    app: mysql5744
+    tier: database
+    code: sql
+    country: cl
+    language: es
+    environment: eksprod
+spec:
+  selector:
+    matchLabels:
+      app: mysql5744
+      tier: database
+      code: sql
+      country: cl
+      language: es
+      environment: eksprod
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mysql5744
+        tier: database
+        code: sql
+        country: cl
+        language: es
+        environment: eksprod
+      annotations:
+        vault.security.banzaicloud.io/vault-addr: "https://vault-prod.portalcredex.cl"
+        vault.security.banzaicloud.io/vault-tls-secret: "vault-tls"
+        vault.security.banzaicloud.io/vault-skip-verify: "true"
+        vault.security.banzaicloud.io/vault-role: "mysql5744-eks-role"
+        vault.security.banzaicloud.io/vault-env-from-path: "kv/data/administrator_credentials/databases/mysql/5744_eks/prod/connection/credentials_root"
+    spec:
+      serviceAccountName: mysql5744-eks-sa-eksprod
+      imagePullSecrets:
+        - name: harbor-registry-secret
+      restartPolicy: Always
+      containers:
+        - name: mysql5744
+          image: harbor.portalcredex.cl/databases/mysql5744-credex:0.0.4
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--ignore-db-dir=lost+found"
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+          - name: mysql5744-persistent-storage-eksprod
+            mountPath: /var/lib/mysql
+          env:
+          - name: MYSQL_ROOT_PASSWORD
+            value: "vault:kv/data/administrator_credentials/databases/mysql/5744_eks/prod/connection/credentials_root#MYSQL_ROOT_PASSWORD"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "100m"
+            limits:
+              memory: "2Gi"
+              cpu: "200m"
+      volumes:
+        - name: mysql5744-persistent-storage-eksprod
+          persistentVolumeClaim:
+            claimName: mysql5744-pvc-eksprod
+      nodeSelector:
+        kubernetes.io/os: linux
+        eks.amazonaws.com/nodegroup: credex-nodes-svc
+        topology.kubernetes.io/region: us-east-1
+        topology.kubernetes.io/zone: us-east-1a

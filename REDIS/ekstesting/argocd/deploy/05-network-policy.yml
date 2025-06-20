@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis724-network-policy
+  namespace: ekstesting
+  labels:
+    app: redis724
+    tier: database
+    code: sql
+    country: cl
+    language: es
+    environment: ekstesting
+spec:
+  podSelector:
+    matchLabels:
+      app: redis724
+      tier: database
+      code: sql
+      country: cl
+      language: es
+      environment: ekstesting
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          environment: ekstesting # selector de etiquetas apropiado que coincida con los pods permitidos para conectarse a Redis.
+    ports:
+    - protocol: TCP
+      port: 6379

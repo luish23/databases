@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql5744-dp-eksqa
+  namespace: eksqa
+  labels:
+    app: mysql5744
+    tier: database
+    code: sql
+    country: cl
+    language: es
+    environment: eksqa
+spec:
+  selector:
+    matchLabels:
+      app: mysql5744
+      tier: database
+      code: sql
+      country: cl
+      language: es
+      environment: eksqa
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mysql5744
+        tier: database
+        code: sql
+        country: cl
+        language: es
+        environment: eksqa
+      annotations:
+        vault.security.banzaicloud.io/vault-addr: "https://vault-devqa.portalcredex.cl"
+        vault.security.banzaicloud.io/vault-tls-secret: "vault-tls"
+        vault.security.banzaicloud.io/vault-skip-verify: "true"
+        vault.security.banzaicloud.io/vault-role: "mysql5744-eks-role"
+        vault.security.banzaicloud.io/vault-env-from-path: "kv/data/administrator_credentials/databases/mysql/5744_eks/qa/connection/credentials_root"
+    spec:
+      serviceAccountName: mysql5744-eks-sa-eksqa
+      imagePullSecrets:
+        - name: harbor-registry-secret
+      restartPolicy: Always
+      containers:
+        - name: mysql5744
+          image: harbor.portalcredex.cl/databases/mysql5744-credex:0.0.4
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--ignore-db-dir=lost+found"
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+          - name: mysql5744-persistent-storage-eksqa
+            mountPath: /var/lib/mysql
+          env:
+          - name: MYSQL_ROOT_PASSWORD
+            value: "vault:kv/data/administrator_credentials/databases/mysql/5744_eks/qa/connection/credentials_root#MYSQL_ROOT_PASSWORD"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "100m"
+            limits:
+              memory: "3Gi"
+              cpu: "200m"
+      volumes:
+        - name: mysql5744-persistent-storage-eksqa
+          persistentVolumeClaim:
+            claimName: mysql5744-pvc-eksqa
+          # startupProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 80
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 5
+          #   failureThreshold: 3
+          #   successThreshold: 1
+          # readinessProbe:
+          #   tcpSocket:
+          #     port: 80
+          #   timeoutSeconds: 5
+          #   periodSeconds: 10
+          #   successThreshold: 1

@@ -1,0 +1,66 @@
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: mysql5744-pvc-eksprod
+#   namespace: eksprod
+#   labels:
+#     app: mysql5744
+#     tier: database
+#     code: sql
+#     country: cl
+#     language: es
+#     environment: eksprod
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 100Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql5744-pvc-eksprod
+  labels:
+    app: mysql5744
+    tier: database
+    code: sql
+    country: cl
+    language: es
+    environment: eksprod
+spec:
+  storageClassName: gp2
+  persistentVolumeReclaimPolicy: Retain
+  # storageClassName: local-storage
+  claimRef:
+    name: mysql5744-pvc-eksprod
+    namespace: eksprod
+  capacity:
+    storage: 100Gi
+  awsElasticBlockStore:
+    volumeID: vol-0f2f42be718d017bb
+    fsType: ext4
+  accessModes:
+    - ReadWriteOnce
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/os
+          operator: In
+          values:
+            - linux
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql5744-pvc-eksprod
+  namespace: eksprod
+spec:
+  storageClassName: gp2
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi

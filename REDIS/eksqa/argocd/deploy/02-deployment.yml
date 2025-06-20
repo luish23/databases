@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis724-dp-eksqa #deployment name
+  namespace: eksqa
+  labels:
+    app: redis724 #deployment label
+    tier: database
+    code: sql
+    country: cl
+    language: es
+    environment: eksqa
+spec:
+  replicas: 1 #a single replica pod
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: redis724 #which pods is the deployment managing, as defined by the pod template
+  template: #pod template
+    metadata:
+      labels:
+        app: redis724 #label for pod/s
+        tier: database
+        code: sql
+        country: cl
+        language: es
+        environment: eksqa
+      annotations:
+        vault.security.banzaicloud.io/vault-addr: "https://vault-devqa.portalcredex.cl"
+        vault.security.banzaicloud.io/vault-tls-secret: "vault-tls"
+        vault.security.banzaicloud.io/vault-skip-verify: "true"
+        vault.security.banzaicloud.io/vault-role: "redis724-role"
+        vault.security.banzaicloud.io/vault-env-from-path: "kv/data/administrator_credentials/databases/redis/724_eks/qa/connection/credentials_root"
+    spec:
+      serviceAccountName: redis724-sa-eksqa
+      imagePullSecrets:
+        - name: harbor-registry-secret
+      restartPolicy: Always
+      containers:
+        - name:  redis724 #Container name (DNS_LABEL, unique)
+          image: harbor.portalcredex.cl/devops/base/redis_credex:7.2.4 #repo/image
+          imagePullPolicy: Always #Always pull image
+          ports:
+          - containerPort: 6379 #exposed container port and protocol
+            protocol: TCP
+          env:
+          - name: REDIS_PASSWORD
+            value: "vault:kv/data/administrator_credentials/databases/redis/724_eks/qa/connection/credentials_root#REDIS_PASSWORD"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "75m"
+            limits:
+              memory: "512Mi"
+              cpu: "100m"
+         

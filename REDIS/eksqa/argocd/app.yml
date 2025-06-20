@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redis724-eksqa
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: eksqa
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: eksqa/argocd/deploy
+    repoURL: https://git-codecommit.us-east-1.amazonaws.com/v1/repos/Redis
+    targetRevision: eksqa
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true

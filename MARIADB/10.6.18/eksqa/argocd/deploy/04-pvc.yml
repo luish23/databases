@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb10618-pvc-eksqa
+  namespace: eksqa
+  labels:
+    app: mariadb10618
+    tier: database
+    code: sql
+    country: cl
+    language: es
+    environment: eksqa
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi

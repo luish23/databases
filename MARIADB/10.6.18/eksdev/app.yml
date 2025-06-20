@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mariadb10618-eksdev
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: eksdev
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: eksdev/argocd/deploy
+    repoURL: https://xyz.git
+    targetRevision: dev
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true

@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mysql5744-eksprod
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: eksprod
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: eksprod/argocd/deploy
+    repoURL: https://xyz.git
+    targetRevision: prod
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
